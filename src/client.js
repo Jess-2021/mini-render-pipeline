@@ -9,10 +9,13 @@ void (async function() {
   })
   console.log(response)
 
-  // let dom = parser.parserHTML(response.body) // 解析HTML为DOM树
+  // TODO 解析HTML为DOM树
+  // let dom = parser.parserHTML(response.body)
 
-  // const viewport = images(800, 600) // 创建图片
-  // render(viewport, dom) // 填充viewport图片
+  // TODO 创建图片
+  // const viewport = images(800, 600)
+  // TODO 创建图片
+  // render(viewport, dom)
   // viewport.save('viewport.jpg')
 })()
 
