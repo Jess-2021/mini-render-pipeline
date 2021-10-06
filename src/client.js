@@ -1,10 +1,10 @@
 const images = require('images')
-const runFetch = require('./request/fetch')
 const render = require('./render/render')
 const parser = require('./render/parser')
 
 void (async function() {
-  let response = await runFetch('127.0.0.1:8088', {
+  const { runFetch } = await import('./request/fetch.mjs')
+  let response = await runFetch('http://127.0.0.1:8088', {
     name: 'jarar'
   })
   console.log(response)
@@ -15,3 +15,4 @@ void (async function() {
   // render(viewport, dom) // 填充viewport图片
   // viewport.save('viewport.jpg')
 })()
+

@@ -1,12 +1,13 @@
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
+import { Request, Headers } from 'node-fetch'
+
 // 通过URL进行匹配资源
 function requestGenerator(url, params) {
-  console.log(this.fetch)
   const headers = new Headers()
   headers.set('Content-Type', 'application/x-www-form-urlencoded')
-  if (!(params instanceof FormData)) {
-    headers.set('Content-Type', 'application/json')
-  }
+  // if (!(params instanceof FormData)) {
+  //   headers.set('Content-Type', 'application/json')
+  // }
   url = new URL(url)
   url.search = new URLSearchParams(params).toString()
 
@@ -16,7 +17,7 @@ function requestGenerator(url, params) {
   })
 }
 
-async function runFetch(url, params) {
+export async function runFetch(url, params) {
   const request = requestGenerator(url, params)
 
   try {
@@ -25,5 +26,3 @@ async function runFetch(url, params) {
     console.error('jar-err', err)
   }
 }
-
-module.exports = runFetch
