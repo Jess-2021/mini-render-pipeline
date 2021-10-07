@@ -3,6 +3,7 @@ let stack = [{ type: 'document', children: []}]
 
 let currentToken = null
 let currentAttribute = null
+const currentTextNode = null
 
 const EOF = Symbol('EOF'); // EOF: End Of File
 
@@ -42,6 +43,61 @@ function data(char) {
       content: char
     })
     return data
+  }
+}
+
+function emit(token) {
+  let top = stack[stack.length - 1]
+
+  if (token.type === 'startTag') {
+    let element = {
+      type: 'element',
+      children: [],
+      attributes: []
+    }
+    element.tagName = token.tagName
+
+    for(let name in token) {
+      if (name !== 'type' && name !== 'tagName') {
+        element.attributes.push({
+          name,
+          value: token[name]
+        })
+      }
+    }
+    // TODO CSS inject
+
+    top.children.push(element)
+
+    // 自关闭标签
+    if (!token.isSelfClosing) {
+      stack.push(element)
+    }
+
+    currentTextNode = null
+  } else if (token.type === 'endTag') {
+    if (top.tagName !== token.tagName) {
+      throw('首位tag不匹配')
+    } else {
+      // TODO style 处理
+      if (top.tagName === 'style') {
+        addCSSRules(top.children[0].content)
+      }
+      stack.pop()
+    }
+
+    // TODO css DOM生成
+
+    currentTextNode = null
+  } else if (token.type === 'text') {
+    if (currentTextNode === null) {
+      currentTextNode = {
+        type: 'text',
+        content: ''
+      }
+      top.children.push(currentTextNode)
+    }
+    currentTextNode.content += token.content
   }
 }
 
@@ -85,9 +141,7 @@ function beforeAttributeName(char) {
     return beforeAttributeName
   } else if (char === '/' || char === '>' || char === EOF) {
     return afterAttributeName(char)
-  } else if (char === '=') {
-    
-  } else {
+  } else if (char !== '=') {
     currentAttribute = {
       name: '',
       value: ''
