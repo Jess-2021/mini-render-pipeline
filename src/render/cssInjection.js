@@ -36,14 +36,17 @@ function computeCSS(stack, element) {
       const computedStyle = element.computedStyle
       for (let declaration of rule.declarations) {
         if (!computedStyle[declaration.property]) {
-          computedStyle[declaration.property]
+          computedStyle[declaration.property] = {}
         }
 
-        if (!computedStyle[declaration.property].specificity) {
+        if (!computedStyle[declaration.property]?.specificity) {
           computedStyle[declaration.property].value = declaration.value
           computedStyle[declaration.property].specificity = sp
         } else if (selectorCompare(computedStyle[declaration.property].specificity, sp)) {
-          // TODO 比较选择器优先级
+          // 比较选择器优先级
+          for (let i = 0; i < 4; i++) {
+            computedStyle[declaration.property][declaration.value][k] += sp[k]
+          }
         }
       }
     }
@@ -89,9 +92,18 @@ function specificity(selector) {
   return p;
 }
 
-// 比较选择器优先级
+// 比较选择器优先级， 例如：[0, 0, 0, 0]
 function selectorCompare(sp1, sp2) {
-
+  if (sp1[0] - sp2[0]) {
+    return sp1[0] - sp2[0]
+  }
+  if (sp1[1] - sp2[1]) {
+    return sp1[1] - sp2[1]
+  }
+  if (sp1[2] - sp2[2]) {
+    return sp1[2] - sp2[2]
+  }
+  return sp1[3] - sp2[3]
 }
 
 

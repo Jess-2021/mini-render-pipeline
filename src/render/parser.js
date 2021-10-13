@@ -1,9 +1,11 @@
-// TODO 生成DOM结构
-let stack = [{ type: 'document', children: []}]
+const cssInjection = require('./cssInjection')
+
+// 生成DOM结构
+let stack = [{ type: 'document', children: [] }]
 
 let currentToken = null
 let currentAttribute = null
-const currentTextNode = null
+let currentTextNode = null
 
 const EOF = Symbol('EOF'); // EOF: End Of File
 
@@ -17,9 +19,9 @@ const EOF = Symbol('EOF'); // EOF: End Of File
 // attributeName -> afterAttributeName, beforeAttributeValue, attributeName
 // beforeAttributeValue -> doubleQuotedAttributeValue, singleQuotedAttributeValue, UnquotedAttributeValue
 
-const parserHTML = function(html) {
+const parserHTML = function (html) {
   let state = data
-  for(let char of html) {
+  for (let char of html) {
     state = state(char)
   }
   state = state(EOF)
@@ -55,7 +57,7 @@ function emit(token) {
     }
     element.tagName = token.tagName
 
-    for(let name in token) {
+    for (let name in token) {
       if (name !== 'type' && name !== 'tagName') {
         element.attributes.push({
           name,
@@ -63,7 +65,8 @@ function emit(token) {
         })
       }
     }
-    // TODO CSS inject
+    // CSS inject
+    cssInjection.computeCSS(stack, element)
 
     top.children.push(element)
 
@@ -75,11 +78,11 @@ function emit(token) {
     currentTextNode = null
   } else if (token.type === 'endTag') {
     if (top.tagName !== token.tagName) {
-      throw('首位tag不匹配')
+      throw new Error('首位tag不匹配')
     } else {
       // TODO style 处理
       if (top.tagName === 'style') {
-        addCSSRules(top.children[0].content)
+        cssInjection.addCSSRules(top.children[0].content)
       }
       stack.pop()
     }
@@ -118,7 +121,7 @@ function tagOpen(char) {
 }
 
 function tagName(char) {
-  if (char.match(/^[\t\n\f]$/)) {
+  if (char.match(/^[\t\n\f ]$/)) {
     return beforeAttributeName
   } else if (char === '/') {
     return selfClosingStartTag
