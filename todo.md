@@ -7,8 +7,8 @@
 
 3. Render 入口总函数 fill image
 
-4. HTML parser - emit push进stash
+4. `parseHTML` - 将字符串逐个解析并push进stash
 
-5. css computed - computedStyle
+5. css computed 填充 `computedStyle`
 
 6. layout - element size

@@ -1,9 +1,9 @@
 const images = require('images')
-const render = require('./render/render')
-const parserHTML = require('./render/parser')
+const render = require('../src/render')
+const parserHTML = require('../src/parser')
 
 void (async function () {
-  const { runFetch } = await import('./request/fetch.mjs')
+  const { runFetch } = await import('../src/request/fetch.mjs')
   let response = await runFetch('http://127.0.0.1:8088', {
     name: 'jarar'
   })
