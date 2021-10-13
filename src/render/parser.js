@@ -7,8 +7,6 @@ const currentTextNode = null
 
 const EOF = Symbol('EOF'); // EOF: End Of File
 
-let rules = [];
-
 // data
 // data -> data, tagOpen
 // tagOpen -> endTagOpen, tagName
