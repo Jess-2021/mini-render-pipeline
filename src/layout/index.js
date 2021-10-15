@@ -14,8 +14,49 @@ function layout(element) {
 
   // TODO 宽高处理
 
-  // flex
-  // 
+  // flex handler
+  let {
+    mainSize, mainStart, mainEnd, mainSign, mainBase,
+    crossSize, crossStart, crossEnd, crossSign, corssBase
+  } = flexHandler(elementsItems)
+
+  // 没有边界时设置默认数值
+  let isAutoMainSize = false
+  if (!style[mainSize]) {
+    elementStyle[mainSize] = 0
+    for (let i = 0; i < elementsItems.length; i++) {
+      let item = elementsItems[i]
+      let itemStyle = formatStyle(item)
+      if (itemStyle[mainSize] !== null || itemStyle[mainSize] !== void 0) {
+        elementStyle[mainSize] = elementStyle[mainSize] + itemStyle[mainSize]
+      }
+    }
+    isAutoMainSize = true
+  }
+
+  let flexLine = [], flexLines = [flexLine]
+  let mainSpace = elementStyle[mainSize], crossSpace = 0
+
+  for (let i = 0; i < elementsItems.length; i++) {
+    let item = elementsItems[i]
+    let itemStyle = formatStyle(item)
+
+    if (itemStyle[mainSize] === null) itemStyle[mainSize] = 0;
+    if (itemStyle.flex) {
+      flexLine.push(item)
+    } else if (style['flex-wrap'] === 'nowrap' && isAutoMainSize) {
+      mainSpace -= itemStyle[mainSize]
+      if (itemStyle[crossSize] !== null && itemStyle[crossSize] !== void 0) {
+        crossSpace = Math.max(crossSpace, itemStyle[crossSize])
+      }
+      flexLine.push(item)
+    } else {
+      if (itemStyle[mainSize] > style[mainSize]) itemStyle[mainSize] = style[mainSize];
+      if (mainSpace < itemStyle[mainSize]) {
+        
+      }
+    }
+  }
 }
 
 function formatStyle(element) {
@@ -23,7 +64,7 @@ function formatStyle(element) {
     element.style = {}
   }
 
-  for(let prop in element.computedStyle) {
+  for (let prop in element.computedStyle) {
     element.style[prop] = element.computedStyle[prop].value
 
     if (element.style[prop].toString().match(/px$/)) {
@@ -63,7 +104,7 @@ function flexHandler(style) {
     mainStart = 'left'
     mainEnd = 'right'
     mainSign = +1 // 正负
-    mainBase = 0
+    mainBase = 0 // 开始的位置
 
     crossSize = 'height'
     crossStart = 'top'
@@ -74,12 +115,51 @@ function flexHandler(style) {
     mainSize = 'width'
     mainStart = 'right'
     mainEnd = 'left'
-    mainSign = -1 // 正负
+    mainSign = -1
     mainBase = style.width
 
     crossSize = 'height'
     crossStart = 'top'
     crossEnd = 'bottom'
+  }
+
+  if (style['flex-direction'] === 'column') {
+    mainSize = 'height'
+    mainStart = 'top'
+    mainEnd = 'bottom'
+    mainSign = +1
+    mainBase = 0
+
+    crossSize = 'width'
+    crossStart = 'left'
+    crossEnd = 'right'
+  }
+
+  if (style['flex-direction'] === 'column-reverse') {
+    mainSize = 'height';
+    mainStart = 'bottom';
+    mainEnd = 'top';
+    mainSign = -1
+    mainBase = style.height;
+
+    crossSize = 'width';
+    crossStart = 'left';
+    crossEnd = 'right';
+  }
+
+  if (style['flex-wrap'] === 'wrap-reverse') {
+    let tmp = crossStart
+    crossStart = crossEnd
+    crossEnd = tmp
+    crossSign = -1
+  } else {
+    crossBase = 0
+    crossSign = 1
+  }
+
+  return {
+    mainSize, mainStart, mainEnd, mainSign, mainBase,
+    crossSize, crossStart, crossEnd, crossSign, corssBase
   }
 }
 
