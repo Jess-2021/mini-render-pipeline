@@ -21,4 +21,6 @@ server.use(async (ctx, _) => {
 })
 
 server.listen(8089)
+console.info(" ⌛ ==>  Server is opening at http://localhost:8089/ ~")
+
 
