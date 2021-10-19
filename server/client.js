@@ -11,11 +11,10 @@ void (async function () {
 
   // 解析HTML为DOM树
   let dom = parserHTML(body)
-  console.log(dom)
+  // console.log(JSON.stringify(dom, null, '  '));
 
-  // TODO 创建图片
-  const viewport = images(800, 600)
-  // TODO 创建图片
+  const viewport = images(1500, 1000)
+  // 填充图片
   render(viewport, dom)
   viewport.save('viewport.jpg')
 })()

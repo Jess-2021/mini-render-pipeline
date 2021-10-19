@@ -39,14 +39,17 @@ function layout(element) {
     isAutoMainSize = true
   }
 
-  let flexLine = [], flexLines = [flexLine]
+  let flexLine = []
+  let flexLines = [flexLine]
   let mainSpace = elementStyle[mainSize], crossSpace = 0
 
   for (let i = 0; i < elementsItems.length; i++) {
     let item = elementsItems[i]
     let itemStyle = formatStyle(item)
 
-    if (itemStyle[mainSize] === null) itemStyle[mainSize] = 0;
+    if (itemStyle[mainSize] === null) {
+      itemStyle[mainSize] = 0;
+    }
     if (itemStyle.flex) {
       flexLine.push(item)
     } else if (elementStyle['flex-wrap'] === 'nowrap' && isAutoMainSize) {
@@ -56,7 +59,9 @@ function layout(element) {
       }
       flexLine.push(item)
     } else {
-      if (itemStyle[mainSize] > elementStyle[mainSize]) itemStyle[mainSize] = elementStyle[mainSize];
+      if (itemStyle[mainSize] > elementStyle[mainSize]) {
+        itemStyle[mainSize] = elementStyle[mainSize];
+      }
       if (mainSpace < itemStyle[mainSize]) {
         flexLine.mainSpace = mainSpace
         flexLine.crossSpace = crossSpace
@@ -240,6 +245,7 @@ function layout(element) {
 }
 
 function formatStyle(element) {
+  // if (element.style && element.style.hasOwnProperty('undefined')) debugger
   if (!element.style) {
     element.style = {}
   }
@@ -277,9 +283,9 @@ function flexHandler(style) {
   }
 
   // 处理flex-direction
-  var mainSize, mainStart, mainEnd, mainSign, mainBase,
+  let mainSize, mainStart, mainEnd, mainSign, mainBase,
     crossSize, crossStart, crossEnd, crossSign, crossBase;
-  if (style['flex-direction' === 'row']) {
+  if (style['flex-direction'] === 'row') {
     mainSize = 'width'
     mainStart = 'left'
     mainEnd = 'right'
@@ -291,7 +297,7 @@ function flexHandler(style) {
     crossEnd = 'bottom'
   }
 
-  if (style['flex-direction' === 'row-reverse']) {
+  if (style['flex-direction'] === 'row-reverse') {
     mainSize = 'width'
     mainStart = 'right'
     mainEnd = 'left'

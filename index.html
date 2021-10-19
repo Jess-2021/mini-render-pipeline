@@ -1,31 +1,46 @@
 <html jar="lll">
 <head>
 <style>
-.container {
+.main {
   display: flex;
   width: 1000px;
   height: 800px;
   background-color: rgb(255,255,255);
 }
-
-.left {
-  width: 200px;
+.container {
+  display: flex;
+  width: 800px;
   height: 800px;
+  justify-content: center;
+  align-items: center;
   background-color: rgb(25,255,255);
 }
 
-.right {
+.left {
+  display: flex;
+  width: 200px;
   height: 800px;
+  justify-content: center;
+  background-color: rgb(155,255,192);
+}
+
+.right {
+  display: flex;
   width: 400px;
-  background-color: rgb(255, 192, 203);
+  height: 400px;
+  background-color: rgb(255,215,255);
 }
 </style>
 </head>
 
 <body>
-  <div class="container">
-    <div class="left"></div>
-    <div class="right"></div>
+  <div class="main">
+    <div class="container">
+      <div class="left"></div>
+      <div class="right">
+        Jar 666!
+      </div>
+    </div>
   </div>
 </body>
 
