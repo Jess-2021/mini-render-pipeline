@@ -4,25 +4,30 @@ function layout(element) {
   }
 
   // 格式化元素的style样式
-  let style = formatStyle(element)
+  let elementStyle = formatStyle(element)
   if (elementStyle.display !== 'flex') {
     return
   }
 
-  let elementsItems = element.filter(e => e.type === 'element')
+  let elementsItems = element.children.filter(e => e.type === 'element')
     .sort((a, b) => (a.order || 0) - (b.order || 0))
 
-  // TODO 宽高处理
+  // 宽高处理
+  Array.from(['width', 'height']).forEach(size => {
+    if (elementStyle[size] === 'auto' || elementStyle[size] === '') {
+      elementStyle[size] = null;
+    }
+  })
 
   // flex handler
   let {
     mainSize, mainStart, mainEnd, mainSign, mainBase,
-    crossSize, crossStart, crossEnd, crossSign, corssBase
+    crossSize, crossStart, crossEnd, crossSign, crossBase
   } = flexHandler(elementsItems)
 
   // 没有边界时设置默认数值
   let isAutoMainSize = false
-  if (!style[mainSize]) {
+  if (!elementStyle[mainSize]) {
     elementStyle[mainSize] = 0
     for (let i = 0; i < elementsItems.length; i++) {
       let item = elementsItems[i]
@@ -44,21 +49,21 @@ function layout(element) {
     if (itemStyle[mainSize] === null) itemStyle[mainSize] = 0;
     if (itemStyle.flex) {
       flexLine.push(item)
-    } else if (style['flex-wrap'] === 'nowrap' && isAutoMainSize) {
+    } else if (elementStyle['flex-wrap'] === 'nowrap' && isAutoMainSize) {
       mainSpace -= itemStyle[mainSize]
       if (itemStyle[crossSize] !== null && itemStyle[crossSize] !== void 0) {
         crossSpace = Math.max(crossSpace, itemStyle[crossSize])
       }
       flexLine.push(item)
     } else {
-      if (itemStyle[mainSize] > style[mainSize]) itemStyle[mainSize] = style[mainSize];
+      if (itemStyle[mainSize] > elementStyle[mainSize]) itemStyle[mainSize] = elementStyle[mainSize];
       if (mainSpace < itemStyle[mainSize]) {
         flexLine.mainSpace = mainSpace
         flexLine.crossSpace = crossSpace
 
         flexLine = [item]
         flexLines.push(flexLine)
-        mainSpace = style[mainSize]
+        mainSpace = elementStyle[mainSize]
         crossSpace = 0
       } else {
         flexLine.push(item)
@@ -72,14 +77,14 @@ function layout(element) {
   }
   flexLine.mainSpace = mainSpace
 
-  if (style['flex-wrap'] === 'nowrap' || isAutoMainSize) {
-    flexLine.crossSpace = (style[crossSize] !== void 0) ? style[crossSize] : crossSpace
+  if (elementStyle['flex-wrap'] === 'nowrap' || isAutoMainSize) {
+    flexLine.crossSpace = (elementStyle[crossSize] !== void 0) ? elementStyle[crossSize] : crossSpace
   } else {
     flexLine.crossSpace = crossSpace
   }
 
   if (mainSpace < 0) {
-    let scale = style[mainSize] / (style[mainSize] - mainSpace)
+    let scale = elementStyle[mainSize] / (elementStyle[mainSize] - mainSpace)
     let currentMain = mainBase
     for (let i = 0; i < items.length; i++) {
       let item = elementsItems[i]
@@ -94,10 +99,10 @@ function layout(element) {
       currentMain = itemStyle[mainEnd]
     }
   } else {
-    flexLines.forEach(items => {
-      let mainSpace = item.mainSpace, flexTotal = 0
-      for (let i = 0; i < items.length; i++) {
-        let item = items[i]
+    flexLines.forEach(flexLine => {
+      let mainSpace = flexLine.mainSpace, flexTotal = 0
+      for (let i = 0; i < flexLine.length; i++) {
+        let item = flexLine[i]
         let itemStyle = formatStyle(item)
 
         if (itemStyle.flex !== null && itemStyle.flex !== void 0) {
@@ -108,8 +113,8 @@ function layout(element) {
 
       if (flexTotal > 0) {
         let currentMain = mainBase
-        for (let i = 0; i < items.length; i++) {
-          let item = item[i]
+        for (let i = 0; i < flexLine.length; i++) {
+          let item = flexLine[i]
           let itemStyle = formatStyle(item)
 
           if (itemStyle.flex) {
@@ -121,7 +126,7 @@ function layout(element) {
         }
       } else {
         // 初始化currentMain
-        switch (style['justify-content']) {
+        switch (elementStyle['justify-content']) {
           case 'flex-start':
             var currentMain = mainBase
             var step = 0
@@ -138,13 +143,13 @@ function layout(element) {
             var currentMain = mainBase;
             var step = mainSpace / (item.length - 1) * mainSign;
           case 'space-around':
-            var step = mainSpace / items.length * mainSign;
+            var step = mainSpace / flexLine.length * mainSign;
             var currentMain = step / 2 + mainBase;
         }
-        
-        for (let i = 0; i < items.length; i++) {
-          let item = items[i]
-          let itemStyle = format(item)
+
+        for (let i = 0; i < flexLine.length; i++) {
+          let item = flexLine[i]
+          let itemStyle = formatStyle(item)
           itemStyle[mainStart] = currentMain
           itemStyle[mainEnd] = itemStyle[mainStart] + mainSign * itemStyle[mainSize]
           currentMain = itemStyle[mainEnd] + step
@@ -153,28 +158,27 @@ function layout(element) {
     })
   }
 
-  let crossSpace
-  if (!style[crossSize]) {
+  if (!elementStyle[crossSize]) {
     crossSpace = 0
     elementStyle[crossSize] = crossSpace = 0
     for (let i = 0; i < flexLines.length; i++) {
       elementStyle[crossSize] = elementStyle[crossSize] + flexLines[i].crossSpace
     }
   } else {
-    crossSpace = style[crossSize]
+    crossSpace = elementStyle[crossSize]
     for (let i = 0; i < flexLines.length; i++) {
       crossSpace -= flexLines[i].crossSpace
     }
   }
 
-  if (style['flex-wrap'] === 'wrap-reverse') {
-    crossBase = style[crossSize]
+  if (elementStyle['flex-wrap'] === 'wrap-reverse') {
+    crossBase = elementStyle[crossSize]
   } else {
     crossBase = 0
   }
 
   let step
-  switch(style['align-content']) {
+  switch(elementStyle['align-content']) {
     case 'flex-start':
       crossBase += 0;
       step = 0
@@ -200,8 +204,39 @@ function layout(element) {
       step = 0
   }
 
-  // TODO 处理每一个flexLine
-  
+  // 处理每一个flexLine
+  flexLines.forEach(flexLine => {
+    let lineCrossSize = elementStyle['align-content'] === 'stretch' ? flexLine.crossSpace + crossSpace / flexLines.length : flexLine.crossSpace
+    for (let i = 0; i < flexLine.length; i++) {
+      let item = flexLine[i]
+      let itemStyle = formatStyle(item)
+      let align = itemStyle.alignSelf || elementStyle['align-items']
+
+      if (item === null) {
+        itemStyle[crossSize] = align === 'stretch' ? lineCrossSize : 0
+      }
+
+      switch (align) {
+        case 'flex-start':
+          itemStyle[crossStart] = crossBase
+          itemStyle[crossEnd] = itemStyle[crossStart] + crossSign * itemStyle[crossSize]
+          break
+        case 'flex-end':
+          itemStyle[crossEnd] = crossBase + crossSign * lineCrossSize;
+          itemStyle[crossStart] = itemStyle[crossEnd] - crossSign * itemStyle[crossSize];
+          break
+        case 'center':
+          itemStyle[crossStart] = crossBase + crossSign * (lineCrossSize - itemStyle[crossSize]) / 2;
+          itemStyle[crossEnd] = itemStyle[crossStart] + crossSign * itemStyle[crossSize];
+          break
+        case 'stretch':
+          itemStyle[crossStart] = crossBase;
+          itemStyle[crossEnd] = crossBase + crossSign * (itemStyle[crossStart] !== null && itemStyle[crossSize] !== void 0 ? itemStyle[crossSize] : lineCrossSize);
+          itemStyle[crossSize] = crossSign * (itemStyle[crossEnd] - itemStyle[crossStart]);
+      }
+    }
+    crossBase += crossSign * (lineCrossSize + step)
+  })
 }
 
 function formatStyle(element) {
@@ -243,7 +278,7 @@ function flexHandler(style) {
 
   // 处理flex-direction
   var mainSize, mainStart, mainEnd, mainSign, mainBase,
-    crossSize, crossStart, crossEnd, crossSign, corssBase;
+    crossSize, crossStart, crossEnd, crossSign, crossBase;
   if (style['flex-direction' === 'row']) {
     mainSize = 'width'
     mainStart = 'left'
@@ -304,7 +339,7 @@ function flexHandler(style) {
 
   return {
     mainSize, mainStart, mainEnd, mainSign, mainBase,
-    crossSize, crossStart, crossEnd, crossSign, corssBase
+    crossSize, crossStart, crossEnd, crossSign, crossBase
   }
 }
 

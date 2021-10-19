@@ -1,4 +1,5 @@
 const cssInjection = require('./cssInjection')
+const layout = require('../layout')
 
 // 生成DOM结构
 let stack = [{ type: 'document', children: [] }]
@@ -87,8 +88,8 @@ function emit(token) {
       stack.pop()
     }
 
-    // TODO css DOM生成
-
+    // css DOM生成
+    layout(top)
     currentTextNode = null
   } else if (token.type === 'text') {
     if (currentTextNode === null) {
